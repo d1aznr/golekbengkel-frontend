@@ -5,8 +5,11 @@ Antarmuka pengguna berbasis web (Web GIS) untuk sistem pencarian rute bengkel op
 ## Fitur Utama
 
 - **Interactive Web GIS** — Peta interaktif menggunakan Leaflet.js dengan kemampuan pemilihan titik asal (origin) dan tujuan (destination) secara langsung via klik.
-- **Dynamic Lambda Control** — Slider parameter $\lambda$ (uphill penalty) yang memungkinkan pengguna menyesuaikan tingkat "darurat" atau kesulitan jalan secara real-time.
-- **Topographical Insights** — Visualisasi ringkasan rute yang mencakup total jarak horizontal (KM) dan akumulasi elevasi tanjakan (meter).
+- **Dual Route Mode** — Dua mode pencarian rute: *Rute Tercepat* (optimasi waktu) dan *Rute Terpendek* (optimasi jarak).
+- **Multiple Velocity Models** — Pilihan model kecepatan untuk mode rute tercepat: GLM (Wood et al., 2023), Tobler's Hiking Function, dan Naismith's Hiking Rule.
+- **Slope Multiplier Control** — Slider parameter pengali lereng ($\lambda$) yang memungkinkan pengguna menyesuaikan tingkat penalti tanjakan secara real-time.
+- **Ignore Downhill Option** — Opsi untuk mengabaikan efek downhill (turunan) dalam perhitungan rute.
+- **Topographical Insights** — Visualisasi ringkasan rute yang mencakup total jarak (KM), waktu tempuh, serta karakteristik lereng rinci (kemiringan rata-rata/maksimum, rasio tanjakan/turunan/datar).
 - **Modern Immersive UI** — Desain antarmuka menggunakan prinsip *Glassmorphism* dengan palet warna pastel untuk memberikan kesan profesional dan modern.
 - **Persistent State** — Penyimpanan preferensi pengguna (seperti status lipatan sidebar) menggunakan `localStorage` untuk konsistensi pengalaman antar sesi.
 
@@ -28,7 +31,7 @@ Aplikasi ini mengadopsi pendekatan **Immersive Map Layout**, di mana peta bukan 
 ### Prasyarat
 
 - Node.js 20+
-- Backend GolekBengkel yang sudah berjalan (default di `http://localhost:3000`)
+- Backend GolekBengkel yang sudah berjalan (default di `http://127.0.0.1:5000`)
 
 ### Langkah-langkah
 
@@ -41,31 +44,36 @@ npm run dev
 ```
 
 Aplikasi akan tersedia di [http://localhost:3000](http://localhost:3000).
+> **Note**: Pastikan backend berjalan di `http://127.0.0.1:5000` sebelum menggunakan fitur pencarian rute.
 
 ## Integrasi Backend
 
-Frontend ini terintegrasi dengan **GolekBengkel Backend API** melalui endpoint berikut:
+Frontend ini terintegrasi dengan **GolekBengkel Backend API** (`http://127.0.0.1:5000/api`) melalui endpoint berikut:
 
-- `POST /api/route`: Mengirimkan koordinat `[lat, lon]` dan nilai `lambda` untuk mendapatkan path graf.
-- `GET /api/graph-info`: (Optional) Menampilkan statistik graf pada antarmuka.
+- `POST /api/route` — Menghitung rute optimal berdasarkan parameter berikut:
+  - `start`, `end`: Koordinat `[lat, lon]`
+  - `mode`: `'time'` (tercepat) atau `'distance'` (terpendek)
+  - `model`: `'glm'`, `'tobler'`, atau `'naismith'` (hanya untuk mode time)
+  - `ignore_downhill`: Abaikan efek downhill dalam perhitungan
+  - `slope_multiplier`: Pengali penalti lereng
 
-Data rute diproses dari koordinat mentah backend menjadi komponen `<Polyline />` Leaflet dengan penyesuaian sumbu koordinat yang akurat.
+Response mencakup path koordinat, jarak tempuh (meter), waktu perjalanan, gain elevasi, serta karakteristik lereng rinci (kemiringan rata-rata/maksimum, panjang tanjakan/turunan/datar beserta rasionya).
 
 ## Struktur Proyek
 
 ```
 ├── app/
 │   ├── layout.tsx          # Root layout & font configuration
-│   ├── page.tsx            # Main page logic & UI structure
+│   ├── page.tsx            # Main page logic, state management & UI structure
 │   └── globals.css         # Global styles & design system (Tailwind 4)
 ├── components/
 │   ├── MapComponent.tsx    # Leaflet integration & event handlers
-│   └── Sidebar.tsx         # Floating control panel & lambda slider
+│   └── Sidebar.tsx         # Floating control panel with route mode, velocity model & slope settings
 ├── lib/
-│   ├── api.ts              # API client & fetch logic
-│   └── types.ts            # TypeScript interfaces & types
+│   ├── api.ts              # API client, fetch logic & response mapping
+│   └── types.ts            # TypeScript interfaces (Coordinate, RouteMode, VelocityModel, RouteData, SlopeCharacteristics)
 ├── public/                 # Static assets
-├── tailwind.config.ts      # Tailwind configuration
+├── next.config.ts          # Next.js configuration
 └── tsconfig.json           # TypeScript configuration
 ```
 
