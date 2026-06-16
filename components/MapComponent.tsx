@@ -63,12 +63,15 @@ const MapClickHandler = ({ origin, setOrigin, setDestination }: MapClickHandlerP
 export default function MapComponent({ origin, destination, path, setOrigin, setDestination, onReset }: MapComponentProps) {
   return (
     <div className="relative w-full h-full">
-      <div className="absolute top-4 right-4 z-[400] bg-white rounded-md shadow-md p-2 text-sm text-gray-700">
-        {!origin ? 'Klik map untuk set lokasi mogok (Merah)' : !destination ? 'Klik map untuk set lokasi bengkel (Biru)' : 'Lokasi sudah diset.'}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-white/95 backdrop-blur-md rounded-full border border-gray-200/80 shadow-md py-1.5 px-4 text-xs font-bold text-gray-700 flex items-center gap-2 pointer-events-none whitespace-nowrap">
+        <span className={`w-1.5 h-1.5 rounded-full ${!origin ? 'bg-rose-500 animate-pulse' : !destination ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+        <span>
+          {!origin ? 'Klik peta untuk lokasi mogok' : !destination ? 'Klik peta untuk lokasi bengkel' : 'Lokasi asal & tujuan diset'}
+        </span>
       </div>
       <button
         onClick={onReset}
-        className="absolute bottom-6 right-6 z-[400] bg-white text-gray-800 font-medium py-2 px-4 rounded-md shadow-md hover:bg-gray-50 transition-colors border border-gray-200"
+        className="absolute top-4 left-4 z-[400] bg-white hover:bg-gray-50 text-gray-800 font-bold py-1.5 px-3 rounded-lg shadow-md transition-all border border-gray-200/80 text-xs cursor-pointer active:scale-95"
       >
         Reset Map
       </button>

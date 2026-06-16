@@ -1,11 +1,14 @@
-import { Coordinate, RouteMode, RouteData } from './types';
+import { Coordinate, RouteMode, RouteData, VelocityModel } from './types';
 
 const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
 export const calculateRoute = async (
   origin: Coordinate,
   destination: Coordinate,
-  lambdaValue: RouteMode
+  mode: RouteMode,
+  model: VelocityModel,
+  ignoreDownhill: boolean,
+  slopeMultiplier: number
 ): Promise<RouteData> => {
   const response = await fetch(`${API_BASE_URL}/route`, {
     method: 'POST',
@@ -15,7 +18,10 @@ export const calculateRoute = async (
     body: JSON.stringify({
       start: [origin.lat, origin.lng],
       end: [destination.lat, destination.lng],
-      lambda: lambdaValue,
+      mode: mode,
+      model: model,
+      ignore_downhill: ignoreDownhill,
+      slope_multiplier: slopeMultiplier,
     }),
   });
 
@@ -37,5 +43,14 @@ export const calculateRoute = async (
     distance: Number((data.distance / 1000).toFixed(2)),
     elevationGain: Number(data.elevation_gain.toFixed(1)),
     path,
+    travelTime: data.travel_time,
+    slopeCharacteristics: data.slope_characteristics,
+    mode: data.mode,
+    lambdaValue: data.lambda_value,
+    ignoreDownhill: data.ignore_downhill,
+    modelType: data.model_type,
+    slopeMultiplier: data.slope_multiplier,
   };
 };
+
+
